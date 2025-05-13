@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../index.js"></script>
+    <title>API</title>
+</head>
+<body>
+    <form>
+        <h5>Sign-up / Login</h5>
+        <label>
+            Usuario<input type="text" id="username">
+        </label>
+        <label>
+            Password<input type="password" id="password">
+        </label>
+        <label>
+            Password Repeat<input type="password" id="password_repeat">
+        </label>
+        <div>
+            <button type="button" id="btnSignup">Registrarse</button>
+            <button type="button" id="btnLogin">Login</button>        
+        </div>
+    </form>
+    <div>
+        <h4>Probar Ruta</h4>
+        <button type="button" id="btnRuta">Probar Ruta</button>
+        <div id="mensaje"></div>
+    </div>
+</body>
+<script>
+    const btnSign=document.getElementById("btnSignup");
+    btnSign.addEventListener("click", function(){
+        
+        const username=document.getElementById("username").value;
+        const password=document.getElementById("password").value;
+        const password_repeat=document.getElementById("password_repeat").value;
+        
+            fetch("http://localhost:3002/api/sign-up", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    password_repeat: password_repeat})
+            })
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+            })
+    });
+
+    const btnLogin=document.getElementById("btnLogin");
+    btnLogin.addEventListener("click", function(){
+        
+        const username=document.getElementById("username").value;
+        const password=document.getElementById("password").value;
+        
+            fetch("http://localhost:3002/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password})
+            })
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+            })
+    });
+
+    const btnRuta=document.getElementById("btnRuta");
+    btnRuta.addEventListener("click", function(){
+        
+        fetch("http://localhost:3002/api/secret-route", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            console.log(json);
+            document.getElementById("mensaje").innerHTML=json.mensaje;
+        })
+    });
+    
+</script>
+</html>
