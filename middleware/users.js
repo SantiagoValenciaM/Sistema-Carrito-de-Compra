@@ -35,6 +35,7 @@ module.exports = {
     try {
       const authHeader = req.headers.authorization;
       const token = authHeader.split(' ')[1];
+    
       const decoded = jwt.verify(token, 'SECRETKEY');
       req.userData = decoded;
       next();

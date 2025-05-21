@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "loginjwt": "file:",
     "mysql2": "^3.14.1",
+    "nodemon": "^3.1.10",
     "uuid": "^11.1.0"
   }
 }

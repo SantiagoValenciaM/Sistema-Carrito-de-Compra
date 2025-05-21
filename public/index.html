@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../index.js"></script>
+    
     <title>API</title>
 </head>
 <body>
@@ -26,10 +26,13 @@
     <div>
         <h4>Probar Ruta</h4>
         <button type="button" id="btnRuta">Probar Ruta</button>
+        <h4>Probar Ruta Admin</h4>
+        <button type="button" id="btnRutaAdmin">Probar Admin</button>
         <div id="mensaje"></div>
     </div>
 </body>
 <script>
+    let token="";
     const btnSign=document.getElementById("btnSignup");
     btnSign.addEventListener("click", function(){
         
@@ -70,17 +73,36 @@
             })
             .then(response => response.json())
             .then(json => {
-                console.log(json);
+                console.log(json.token);
+                token=json.token;
             })
     });
 
     const btnRuta=document.getElementById("btnRuta");
     btnRuta.addEventListener("click", function(){
-        
+        console.log(token);
         fetch("http://localhost:3002/api/secret-route", {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`  
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            console.log(json);
+            document.getElementById("mensaje").innerHTML=json.mensaje;
+        })
+    });
+    
+    const btnRutaAdmin=document.getElementById("btnRutaAdmin");
+    btnRutaAdmin.addEventListener("click", function(){
+        console.log(token);
+        fetch("http://localhost:3002/api/admin-route", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`  
             }
         })
         .then(response => response.json())

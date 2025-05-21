@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const db = require('../lib/db.js');
 const userMiddleware = require('../middleware/users.js');
+const adminMiddleware = require('../middleware/admins.js');
 
 // routes/router.js
 
@@ -81,7 +82,7 @@ router.post('/login', (req, res, next) => {
                     userId: result[0].id,
                   },
                   'SECRETKEY',
-                  { expiresIn: '3m' }
+                  { expiresIn: '10m' }
                 );
                 db.query(`UPDATE users SET last_login = now() WHERE id = ?;`, [
                   result[0].id,
@@ -103,7 +104,12 @@ router.post('/login', (req, res, next) => {
 
 router.get('/secret-route', userMiddleware.isLoggedIn, (req, res, next) => {
     console.log(req.userData);
-    res.send('This is the secret content. Only logged in users can see that!');
+    res.send({msg:"This is the secret content. Only logged in users can see that!"});
+});
+
+router.get('/admin-route', adminMiddleware.verifyAdmin, (req, res, next) => {
+    console.log(req.user);
+    res.send({msg:"Only admins can see that!"});
 });
 
 module.exports = router;
