@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button, input, textarea { margin: 5px 0; display: block; }
+    .section { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Panel de Administrador</h1>
+
+  <div class="section">
+    <h2>📋 Ver todos los clientes</h2>
+    <button onclick="getClientes()">Cargar clientes</button>
+    <button id="toggleClientesBtn" onclick="toggleSection('clientes')" style="display: none;">
+        Ocultar Clientes
+    </button>
+    <div id="clientes" style="display: none;"></div>
+  </div>
+
+  <div class="section">
+  <h2>📦 Ver todos los productos</h2>
+  <button onclick="getProductos()">Cargar productos</button>
+  <button id="toggleProductosBtn" onclick="toggleSection('productos')" style="display: none;">
+    Ocultar Productos
+  </button>
+  <div id="productos" style="display: none;"></div>
+  </div>
+
+  <div class="section">
+    <h2>➕ Agregar nuevo producto</h2>
+    <input type="text" id="nuevoNombre" placeholder="Nombre" required> 
+    <textarea id="nuevaDescripcion" placeholder="Descripción" required></textarea>
+    <input type="number" id="nuevoPrecio" step="0.01" min="0" placeholder="Precio" required>
+    <input type="number" id="nuevoStock" min="0" placeholder="Stock" required>
+    <label for="nuevaImagen">URL de la imagen:</label>
+    <input id="nuevaImagen" type="url" placeholder="https://example.com/imagen.jpg" required>
+    <button onclick="agregarProducto()">Agregar</button>
+  </div>
+
+  <div class="section">
+    <h2>✏️ Modificar producto</h2>
+    <input type="text" id="modificarId" placeholder="ID del producto a modificar">
+    <input type="text" id="modificarNombre" placeholder="Nuevo nombre">
+    <textarea id="modificarDescripcion" placeholder="Nueva descripción"></textarea>
+    <input type="number" id="modificarPrecio" step="0.01" min="0" placeholder="Nuevo precio">
+    <input type="number" id="modificarStock" min="0" placeholder="Nuevo stock">
+    <label for="modificarImagen">URL de la imagen:</label>
+    <input type="text" id="modificarImagen"><br>
+    <button onclick="modificarProducto()">Modificar</button>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token"); // Asegúrate de guardar el token antes
+
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    };
+
+    function getClientes() {
+      fetch('http://localhost:3002/api/admin/users', { headers })
+        .then(res => res.json())
+        .then(json => {
+            const clientesDiv = document.getElementById('clientes');
+            clientesDiv.innerHTML = '';
+            
+            json.forEach(cliente => {
+                const p = document.createElement('p');
+                p.textContent = JSON.stringify(cliente, null, 2);
+                clientesDiv.appendChild(p);
+            });
+
+      // Mostrar la sección y el botón una vez que se cargan los datos
+      clientesDiv.style.display = 'block';
+      document.getElementById('toggleClientesBtn').style.display = 'inline-block';
+    })
+    .catch(error => {
+      console.error('Error al cargar clientes:', error);
+    });
+    }
+
+    function getProductos() {
+      fetch('http://localhost:3002/api/admin/products', { headers })
+        .then(res => res.json())
+        .then(json => {
+            const productosDiv = document.getElementById('productos');
+            productosDiv.innerHTML = '';
+
+        json.forEach(producto => {
+        const p = document.createElement('p');
+        p.textContent = JSON.stringify(producto, null, 2);
+        productosDiv.appendChild(p);
+      });
+
+        productosDiv.style.display = 'block';
+        document.getElementById('toggleProductosBtn').style.display = 'inline-block';
+    })
+    .catch(error => {
+      console.error('Error al cargar productos:', error);
+    });
+    }
+
+    function agregarProducto() {
+      const producto = {
+        name: document.getElementById("nuevoNombre").value,
+        description: document.getElementById("nuevaDescripcion").value,
+        price: parseFloat(document.getElementById("nuevoPrecio").value),
+        stock: parseInt(document.getElementById("nuevoStock").value),
+        image_url: document.getElementById("nuevaImagen").value
+      };
+
+      fetch('http://localhost:3002/api/admin/products', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(producto)
+      })
+        .then(res => res.json())
+        .then(data => alert("Producto agregado correctamente"))
+        .catch(err => alert("Error al agregar producto"));
+    }
+
+    function modificarProducto() {
+      const id = document.getElementById("modificarId").value;
+      const producto = {
+        name: document.getElementById("modificarNombre").value,
+        description: document.getElementById("modificarDescripcion").value,
+        price: parseFloat(document.getElementById("modificarPrecio").value),
+        stock: parseInt(document.getElementById("modificarStock").value),
+        image_url: document.getElementById("modificarImagen").value
+      };
+
+      fetch(`http://localhost:3002/api/admin/products/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(producto)
+      })
+        .then(res => res.json())
+        .then(data => alert("Producto modificado correctamente"))
+        .catch(err => alert("Error al modificar producto"));
+    }
+
+    function toggleSection(id) {
+        const section = document.getElementById(id);
+        const toggleClientesBtn = document.getElementById('toggleClientesBtn');
+        const toggleProductosBtn = document.getElementById('toggleProductosBtn');
+
+        section.style.display = 'none';
+        switch (id) {
+            case 'clientes':
+                toggleClientesBtn.style.display = 'none';
+                break;
+            case 'productos':
+                toggleProductosBtn.style.display = 'none';
+                break;
+        }
+    }
+  </script>
+</body>
+</html>

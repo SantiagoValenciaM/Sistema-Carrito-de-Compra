@@ -28,7 +28,8 @@
         <button type="button" id="btnRuta">Probar Ruta</button>
         <h4>Probar Ruta Admin</h4>
         <button type="button" id="btnRutaAdmin">Probar Admin</button>
-        <div id="mensaje"></div>
+        <h4>Recuperar Usuarios</h4>
+        <button type="button" id="btnRecuperarUsuarios">Recuperar Usuarios</button>
     </div>
 </body>
 <script>
@@ -73,8 +74,14 @@
             })
             .then(response => response.json())
             .then(json => {
-                console.log(json.token);
-                token=json.token;
+                const token=json.token;
+                localStorage.setItem("token", token);
+
+                if (json.user.role === "admin") {
+                    window.location.href = "/public/admin.html";
+                } else {
+                    window.location.href = "/public/user.html";
+                }
             })
     });
 
@@ -99,6 +106,23 @@
     btnRutaAdmin.addEventListener("click", function(){
         console.log(token);
         fetch("http://localhost:3002/api/admin-route", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`  
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            console.log(json);
+            document.getElementById("mensaje").innerHTML=json.mensaje;
+        })
+    });
+    
+    const btnRecuperarClientes=document.getElementById("btnRecuperarUsuarios");
+    btnRecuperarClientes.addEventListener("click", function(){
+        console.log(token);
+        fetch("http://localhost:3002/api/admin/users", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

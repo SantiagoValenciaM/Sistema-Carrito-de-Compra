@@ -80,6 +80,7 @@ router.post('/login', (req, res, next) => {
                   {
                     username: result[0].username,
                     userId: result[0].id,
+                    role: result[0].role
                   },
                   'SECRETKEY',
                   { expiresIn: '10m' }
@@ -112,4 +113,43 @@ router.get('/admin-route', adminMiddleware.verifyAdmin, (req, res, next) => {
     res.send({msg:"Only admins can see that!"});
 });
 
+router.get('/admin/users', adminMiddleware.verifyAdmin, (req, res, next) => {
+  console.log(req.user);
+  db.query('SELECT * FROM users', (err, result) => {
+    if (err) { return res.status(400).send({message: err});
+    }
+    res.json(result);
+  });
+});
+
+router.get('/admin/products', adminMiddleware.verifyAdmin, (req, res, next) => {
+  console.log(req.user);
+  db.query('SELECT * FROM products', (err, result) => {
+    if (err) { return res.status(400).send({message: err});
+    }
+    res.json(result);
+  });
+});
+
+router.post('/admin/products', adminMiddleware.verifyAdmin, (req, res) => {
+  const id = uuid.v4();
+  const { name, description, price, stock, image_url } = req.body;
+
+  const sql = 'INSERT INTO products (id, name, description, price, stock, image_url, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())';
+  db.query(sql, [id, name, description, price, stock, image_url], (err, result) => {
+  if (err) return res.status(500).json({ error: err.message });
+  res.json({ message: 'Producto agregado exitosamente', result});
+});
+});
+
+router.put('/admin/products/:id', adminMiddleware.verifyAdmin, (req, res) => {
+  const { id } = req.params;
+  const { name, description, price, stock, image_url } = req.body;
+
+  const sql = 'UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, updated_at = now() WHERE id = ?';
+  db.query(sql, [name, description, price, stock, image_url, id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: 'Producto actualizado exitosamente' });
+  });
+});
 module.exports = router;
