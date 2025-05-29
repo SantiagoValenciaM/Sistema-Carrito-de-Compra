@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mis Pedidos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f9f9f9;
+    }
+    .order {
+      background-color: #fff;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .order h2 {
+      margin-bottom: 0.5rem;
+    }
+    .order-details {
+      margin-top: 1rem;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .order-details th, .order-details td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .order-details th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Mis Pedidos</h1>
+  <div id="orders-container">Cargando pedidos...</div>
+
+  <script>
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    };
+
+    fetch(`http://localhost:3002/api/store/orders`, {headers})
+      .then(response => response.json())
+      .then(orders => {
+        const container = document.getElementById('orders-container');
+        container.innerHTML = ''; // limpia el mensaje de "Cargando"
+
+        if (orders.length === 0) {
+          container.innerHTML = '<p>No tienes pedidos aún.</p>';
+          return;
+        }
+
+        console.log('Pedidos recibidos:', orders);
+
+        orders.forEach(order => {
+          const orderDiv = document.createElement('div');
+          orderDiv.classList.add('order');
+
+          orderDiv.innerHTML = `
+            <h2>Pedido #${order.order_id}</h2>
+            <p><strong>Fecha:</strong> ${new Date(order.date).toLocaleDateString()}</p>
+            <p><strong>Total:</strong> $${order.total_price.toFixed(2)}</p>
+            <table class="order-details">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Precio Unitario</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.details.map(item => `
+                  <tr>
+                    <td>${item.product_name}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${Number(item.price_at_purchase).toFixed(2)}</td>
+                    <td>$${(item.quantity * Number(item.price_at_purchase)).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+
+          container.appendChild(orderDiv);
+        });
+      })
+      .catch(err => {
+        console.error('Error al cargar pedidos:', err);
+        document.getElementById('orders-container').innerHTML = '<p>Error al cargar tus pedidos.</p>';
+      });
+  </script>
+
+</body>
+</html>

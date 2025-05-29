@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tienda en Línea</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    
+    .producto { border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 8px; display: inline-block; width: 200px; vertical-align: top; }
+    
+    .carrito { position: fixed; top: 20px; right: 20px; border: 1px solid #aaa; padding: 10px; background: #f7f7f7; width: 300px; }
+    
+    #productosContainer { display: flex; flex-wrap: wrap; }
+    
+    button { margin-top: 5px; }
+    
+    .btn-orders {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+      }
+
+      .mensaje{
+      display: none;
+      padding: 12px;
+      margin: 20px 0;
+      border-radius: 8px;
+      font-weight: bold;
+      background-color: #e7f4e4;
+      color: #2f6627;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tienda Online</h1>
+  <div id="mensaje"></div>
+
+  <input type="text" id="buscarProducto" placeholder="Buscar producto..." />
+  <button onclick="buscar()">Buscar</button>
+  <button id="btn-orders" onclick="window.location.href='orders.html'">
+  Mis Pedidos
+  </button>
+
+
+  <div id="productosContainer"></div>
+
+  <div class="carrito">
+    <h3>Carrito</h3>
+    <ul id="carritoLista"></ul>
+    <p>Total: $<span id="total">0.00</span></p>
+    <button onclick="pagar()">Pagar</button>
+  </div>
+  
+  
+  <script>
+    let carrito = [];
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    };
+
+    function cargarProductos() {
+      fetch('http://localhost:3002/api/store/products', { headers })
+        .then(res => res.json())
+        .then(mostrarProductos);
+    }
+
+    function buscar() {
+      const query = document.getElementById("buscarProducto").value;
+      fetch(`http://localhost:3002/api/store/search?query=${query}`, { headers })
+        .then(res => res.json())
+        .then(mostrarProductos);
+    }
+
+    function mostrarProductos(productos) {
+      const contenedor = document.getElementById("productosContainer");
+      contenedor.innerHTML = '';
+      productos.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "producto";
+        div.innerHTML = `
+          <h4>${p.name}</h4>
+          <img src="${p.image_url}" alt="${p.name}" style="width: 100%"/>
+          <p>${p.description}</p>
+          <p>Precio: $${p.price}</p>
+          <p>Stock: ${p.stock}</p>
+          <button onclick='agregarCarrito(${JSON.stringify(p)})'>Agregar</button>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function agregarCarrito(producto) {
+      const existente = carrito.find(p => p.id === producto.id);
+      if (existente) existente.quantity++;
+      else carrito.push({ ...producto, quantity: 1 });
+      actualizarCarrito();
+    }
+
+    function actualizarCarrito() {
+      const lista = document.getElementById("carritoLista");
+      lista.innerHTML = '';
+      let total = 0;
+      carrito.forEach(p => {
+        total += p.price * p.quantity;
+        const li = document.createElement("li");
+        li.textContent = `${p.name} x${p.quantity} - $${(p.price * p.quantity).toFixed(2)}`;
+        lista.appendChild(li);
+      });
+      document.getElementById("total").textContent = total.toFixed(2);
+    }
+
+    function pagar() {
+      if (carrito.length === 0) return mostrarMensaje("Carrito vacío");
+
+      const productos = carrito.map(p => ({ product_id: p.id, quantity: p.quantity }));
+
+      fetch('http://localhost:3002/api/store/orders', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ products: carrito.map(p => ({ product_id: p.id, quantity: p.quantity })) })
+      })
+        .then(res => res.json())
+        .then(data => {
+          mostrarMensaje("Pedido realizado con éxito: " + data.orderId, "exito");
+          carrito = [];
+          actualizarCarrito();
+          cargarProductos();
+        })
+        .catch(err => mostrarMensaje("Error al procesar pedido", "error"));
+    }
+
+    cargarProductos();
+
+    function mostrarMensaje(texto, tipo = "exito") {
+    const mensajeDiv = document.getElementById("mensaje");
+    mensajeDiv.style.display = "block";
+    mensajeDiv.style.backgroundColor = tipo === "error" ? "#f8d7da" : "#d4edda";
+    mensajeDiv.style.color = tipo === "error" ? "#721c24" : "#155724";
+    mensajeDiv.style.border = tipo === "error" ? "1px solid #f5c6cb" : "1px solid #c3e6cb";
+    mensajeDiv.textContent = texto;
+
+    setTimeout(() => {
+      mensajeDiv.style.display = "none";
+    }, 5000);
+}
+  </script>
+</body>
+</html>
