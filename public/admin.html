@@ -4,23 +4,344 @@
   <meta charset="UTF-8">
   <title>Panel de Administradores</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    button, input, textarea { margin: 5px 0; display: block; }
-    .section { margin-bottom: 30px; }
+    * {
+      box-sizing: border-box;
+    }
 
-    .mensaje{
-      display: none;
-      padding: 12px;
-      margin: 20px 0;
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      padding: 20px; 
+      margin: 0;
+      background-color: white;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* Título principal */
+    h1 {
+      color: #2c3e50;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-align: center;
+      font-weight: 600;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 15px;
+    }
+
+    h2 {
+      color: #34495e;
+      font-size: 1.4em;
+      margin-bottom: 20px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Secciones */
+    .section { 
+      margin-bottom: 40px;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+    }
+
+    /* Botones */
+    button {
+      padding: 12px 24px;
+      border: none;
       border-radius: 8px;
-      font-weight: bold;
-      background-color: #e7f4e4;
-      color: #2f6627;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      margin: 5px 5px 5px 0;
+      display: inline-block;
+    }
+
+    /* Botón principal de cada sección */
+    .section > button:first-of-type {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      font-size: 16px;
+      padding: 14px 28px;
+    }
+
+    .section > button:first-of-type:hover {
+      background: linear-gradient(135deg, #2980b9, #1f639a);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Botones de toggle/ocultar */
+    button[id*="toggle"] {
+      background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+      color: white;
+    }
+
+    button[id*="toggle"]:hover {
+      background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(149, 165, 166, 0.3);
+    }
+
+    /* Botón agregar */
+    button[onclick="agregarProducto()"] {
+      background: linear-gradient(135deg, #27ae60, #219a52);
+      color: white;
+      width: 100%;
+      font-size: 16px;
+      padding: 14px;
+      margin-top: 15px;
+    }
+
+    button[onclick="agregarProducto()"]:hover {
+      background: linear-gradient(135deg, #219a52, #1e8449);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+
+    /* Botón modificar */
+    button[onclick="modificarProducto()"] {
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+      color: white;
+      width: 100%;
+      font-size: 16px;
+      padding: 14px;
+      margin-top: 15px;
+    }
+
+    button[onclick="modificarProducto()"]:hover {
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+    }
+
+    /* Inputs y textareas */
+    input, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      margin: 8px 0;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+      background-color: #fafafa;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #3498db;
+      background-color: white;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* Labels */
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    /* Contenedores de datos */
+    #clientes, #productos {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e9ecef;
+    }
+
+    #clientes p, #productos p {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #3498db;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Formularios con mejor organización */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .form-grid .full-width {
+      grid-column: span 2;
+    }
+
+    /* Separadores visuales */
+    .section:not(:last-child)::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      margin: 30px auto 0;
+      border-radius: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 2em;
+      }
+
+      .section {
+        padding: 20px 15px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid .full-width {
+        grid-column: span 1;
+      }
+
+      button {
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      button[id*="toggle"] {
+        width: auto;
+        display: inline-block;
+      }
+    }
+
+    /* Mensajes */
+    .mensaje {
+      display: none;
+      padding: 16px 24px;
+      margin: 25px auto;
+      border-radius: 12px;
+      font-weight: 500;
+      text-align: center;
+      max-width: 600px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border: none;
+      font-size: 16px;
+      position: relative;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .mensaje.exito {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+
+    .mensaje.error {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+
+    .mensaje.info {
+      background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+      color: #0c5460;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .mensaje.warning {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+
+    .mensaje::before {
+      content: '';
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    .mensaje.exito::before {
+      content: '✅';
+      font-size: 18px;
+    }
+
+    .mensaje.error::before {
+      content: '❌';
+      font-size: 18px;
+    }
+
+    .mensaje.info::before {
+      content: 'ℹ️';
+      font-size: 18px;
+    }
+
+    .mensaje.warning::before {
+      content: '⚠️';
+      font-size: 18px;
+    }
+
+    .mensaje-texto {
+      margin-left: 35px;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
+    .mensaje.fade-out {
+      animation: fadeOut 0.3s ease-in forwards;
     }
   </style>
 </head>
 <body>
+  <button onclick="window.location.href='index.html'">Cerrar Sesión</button>
   <h1>Panel de Administrador</h1>
+
+  <div id="mensaje"></div>
 
   <div class="section">
     <h2>📋 Ver todos los clientes</h2>
@@ -63,7 +384,6 @@
     <button onclick="modificarProducto()">Modificar</button>
   </div>
 
-  <div id="mensaje"></div>
   <script>
     const token = localStorage.getItem("token"); // Asegúrate de guardar el token antes
 
@@ -171,18 +491,31 @@
                 break;
         }
     }
+    
     function mostrarMensaje(texto, tipo = "exito") {
-    const mensajeDiv = document.getElementById("mensaje");
-    mensajeDiv.style.display = "block";
-    mensajeDiv.style.backgroundColor = tipo === "error" ? "#f8d7da" : "#d4edda";
-    mensajeDiv.style.color = tipo === "error" ? "#721c24" : "#155724";
-    mensajeDiv.style.border = tipo === "error" ? "1px solid #f5c6cb" : "1px solid #c3e6cb";
-    mensajeDiv.textContent = texto;
-
-    setTimeout(() => {
-      mensajeDiv.style.display = "none";
-    }, 5000);
-}
+      const mensajeDiv = document.getElementById("mensaje");
+      
+      // Limpiar clases anteriores
+      mensajeDiv.className = "mensaje";
+      
+      // Agregar clase según el tipo
+      mensajeDiv.classList.add(tipo);
+      
+      // Crear el contenido con icono
+      mensajeDiv.innerHTML = `<div class="mensaje-texto">${texto}</div>`;
+      
+      // Mostrar el mensaje
+      mensajeDiv.style.display = "block";
+      
+      // Ocultar después de 5 segundos con animación
+      setTimeout(() => {
+        mensajeDiv.classList.add('fade-out');
+        setTimeout(() => {
+          mensajeDiv.style.display = "none";
+          mensajeDiv.classList.remove('fade-out');
+        }, 300);
+      }, 5000);
+    }
   </script>
 </body>
 </html>
